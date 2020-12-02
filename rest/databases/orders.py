@@ -3,11 +3,14 @@ ORDER_DATABASE = {
         "customer": "Douglass Grimes",
         "items": [
             {
-                "sku": "",
-                "product_name": "",
+                "sku": "CJ1646-600",
+                "product_name": "Nike Air Force 1 '07 Essential",
+                "image_url": "https://static.nike.com/a/images/t_PDP_1728_v1/20488f52-3686-476c-b4b8-0ca430c34a05/air-force-1-07-essential-shoe-BHN3Db.jpg",
                 "quantity": 1,
-                "unit_price": "",
-                "extended_price": "",
+                "price": "$74.95"
+            },
+            {
+
             }
         ]
     },

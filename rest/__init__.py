@@ -7,7 +7,7 @@ from flask import render_template
 from flask import request
 from flask import Response
 
-from rest.databases.orders import ORDER_DATABASE
+from rest.databases.shoes import get_products, get_product_by_id
 
 # Set our default listening port to 3000
 port = 3000
@@ -32,15 +32,18 @@ def home():
     return render_template('welcome.html')  # render a template
 
 
-@app.route('/orders', methods=['GET'])
+@app.route('/catalog', methods=['GET'])
 def search_for_orders():
     app.logger.debug(f"Content-Type: {request.content_type}")
     app.logger.debug(f"Args: {type(request.args)}")
-    return "Here you go"
+    response = Response(response=json.dumps(get_products()).encode('utf-8'),
+                        status=HTTPStatus.OK,
+                        content_type='application/json')
+    return response
 
 
-@app.route('/order/<order_id>', methods=['GET'])
-def get_order(order_id):
+@app.route('/catalog/item/<product_id>', methods=['GET'])
+def get_order(product_id):
     response = None
     app.logger.debug(request.headers)
     if request.headers['accept'] != 'application/json':
@@ -48,14 +51,15 @@ def get_order(order_id):
                             status=HTTPStatus.METHOD_NOT_ALLOWED,
                             content_type='application/json')
 
-    elif order_id is None:
+    elif product_id is None:
         response = Response(response={"result": "Order Id Missing"},
                             status=HTTPStatus.BAD_REQUEST,
                             content_type='application/json')
-    elif order_id in ORDER_DATABASE:
-        response = Response(response=json.dumps(ORDER_DATABASE[order_id]),
-                            status=HTTPStatus.OK,
-                            content_type='application/json')
+    elif False:
+        pass
+#        response = Response(response=json.dumps(CATALOG[pro]),
+#                            status=HTTPStatus.OK,
+#                            content_type='application/json')
     else:
         response = Response({"result": "Order Not Found"},
                             status=HTTPStatus.NOT_FOUND,
