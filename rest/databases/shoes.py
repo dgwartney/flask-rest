@@ -439,5 +439,7 @@ def get_product_by_id(product_id):
     result = None
     for product in PRODUCTS:
         if product_id == product['Product ID']:
-            result = product['Product ID']
-    return None
+            result = product
+    return result
+
+

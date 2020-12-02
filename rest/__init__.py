@@ -32,7 +32,7 @@ def home():
     return render_template('welcome.html')  # render a template
 
 
-@app.route('/catalog', methods=['GET'])
+@app.route('/products', methods=['GET'])
 def search_for_orders():
     app.logger.debug(f"Content-Type: {request.content_type}")
     app.logger.debug(f"Args: {type(request.args)}")
@@ -42,44 +42,59 @@ def search_for_orders():
     return response
 
 
-@app.route('/catalog/item/<product_id>', methods=['GET'])
+@app.route('/products/item/<product_id>', methods=['GET'])
 def get_order(product_id):
     response = None
     app.logger.debug(request.headers)
     if request.headers['accept'] != 'application/json':
-        response = Response(response={"result": "Incorrect accept header"},
+        response = Response(response=json.dumps({"result": "Incorrect accept header"}).encode('utf-8'),
                             status=HTTPStatus.METHOD_NOT_ALLOWED,
                             content_type='application/json')
 
     elif product_id is None:
-        response = Response(response={"result": "Order Id Missing"},
+        response = Response(response=json.dumps({"result": "Product Id Missing"}).encode('utf-8'),
                             status=HTTPStatus.BAD_REQUEST,
                             content_type='application/json')
-    elif False:
-        pass
-#        response = Response(response=json.dumps(CATALOG[pro]),
-#                            status=HTTPStatus.OK,
-#                            content_type='application/json')
+    elif get_product_by_id(product_id) is not None:
+        product = get_product_by_id(product_id)
+        response = Response(response=json.dumps(product),
+                            status=HTTPStatus.OK,
+                            content_type='application/json')
     else:
-        response = Response({"result": "Order Not Found"},
+        response = Response(response=json.dumps({"result": "Product Not Found"}).encode('utf-8'),
                             status=HTTPStatus.NOT_FOUND,
                             content_type='application/json')
     return response
 
 
-@app.route('/order', methods=['POST'])
+@app.route('/products', methods=['POST'])
 def lookup_order(order_id):
+    response = None
     app.logger.debug(f"Content-Type: {request.content_type}")
     app.logger.debug(f"Type: {type(request.data)}")
     app.logger.debug(request.data)
     if request.data is None:
-        request = Response(response={"request": "Order id not specified"}, status=HTTPStatus.BAD_REQUEST)
-        return 'No data'
+        response = Response(response={"request": "Product id not specified"},
+                            status=HTTPStatus.BAD_REQUEST,
+                            content_type='application/json')
+    elif request.content_type != 'application/json':
+        response = Response(response={"result": "Incorrect accept header"},
+                            status=HTTPStatus.METHOD_NOT_ALLOWED,
+                            content_type='application/json')
     else:
-        response = Response(response=request.data)
-        response.headers["content-type"] = "application/json"
-        if order_id in ORDER_DATABASE:
-            return ORDER_DATABASE[order_id]
+        doc = json.loads(request.data)
+        product_id = doc['product_id']
+        if 'product_id' in doc:
+            product = get_product_by_id(product_id)
+
+            response = Response(response=json.dumps(product).encode('utf-8'),
+                                status=HTTPStatus.OK,
+                                content_type='application/json')
+        else:
+            response = Response(response={"request": "Product id not specified"},
+                                status=HTTPStatus.BAD_REQUEST,
+                                content_type='application/json')
+    return response
 
 
 # start the server with the 'run()' method
