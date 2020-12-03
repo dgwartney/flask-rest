@@ -25,9 +25,9 @@ Lists all of the products.
 
 ### GET
 
-````
+```
 $ curl 'http://localhost:5000/products' -H 'accept: application/json' 
-````
+```
 
 ```json
 {
@@ -101,8 +101,8 @@ $ curl -X POST 'http://localhost:5000/products' -d '{"product_id": "CT1726-100"}
 
 #### GET
 
-````
-    $ curl 'http://localhost:5000/products/item/CT1726-100' -H 'accept: application/json'
+```
+$ curl 'http://localhost:5000/products/item/CT1726-100' -H 'accept: application/json'
 ```
 
 ```json
@@ -135,7 +135,6 @@ $ curl -X POST 'http://localhost:5000/products' -d '{"product_id": "CT1726-100"}
 }
 ```
 
-### POST
 
 
 
