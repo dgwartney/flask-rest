@@ -33,7 +33,7 @@ def home():
 def search_for_orders():
     app.logger.debug(f"Content-Type: {request.content_type}")
     app.logger.debug(f"Args: {type(request.args)}")
-    response = dict_to_json_response(get_products(), status=HTTPStatus.OK)
+    response = dict_to_json_response({"products": get_products()}, status=HTTPStatus.OK)
     return response
 
 
@@ -50,7 +50,7 @@ def get_order(product_id):
         response = dict_to_json_response({"result": "Product Id Missing"}, HTTPStatus.BAD_REQUEST)
     elif get_product_by_id(product_id) is not None:
         product = get_product_by_id(product_id)
-        response = dict_to_json_response(product, HTTPStatus.OK)
+        response = dict_to_json_response({"products": [product]}, HTTPStatus.OK)
     else:
         response = dict_to_json_response({"result": "Product Not Found"}, HTTPStatus.NOT_FOUND)
     return response
@@ -74,7 +74,7 @@ def lookup_order():
         product_id = doc['product_id']
         if 'product_id' in doc:
             product = get_product_by_id(product_id)
-            response = dict_to_json_response(product, HTTPStatus.OK)
+            response = dict_to_json_response({ "products": [product]}, HTTPStatus.OK)
         else:
             response = dict_to_json_response({"request": "Product id not specified"},
                                              HTTPStatus.BAD_REQUEST)
