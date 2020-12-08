@@ -31,9 +31,10 @@ def home():
 #
 @app.route('/products', methods=['GET'])
 def search_for_orders():
-    app.logger.debug(f"Content-Type: {request.content_type}")
-    app.logger.debug(f"Args: {type(request.args)}")
-    response = dict_to_json_response({"products": get_products()}, status=HTTPStatus.OK)
+    if 'accept' not in request.headers or request.headers['accept'] != 'application/json':
+        response = dict_to_json_response({"result": "Incorrect accept header"}, HTTPStatus.METHOD_NOT_ALLOWED)
+    else:
+        response = dict_to_json_response({"products": get_products()}, status=HTTPStatus.OK)
     return response
 
 
@@ -44,7 +45,7 @@ def search_for_orders():
 def get_order(product_id):
     response = None
     app.logger.debug(request.headers)
-    if request.headers['accept'] != 'application/json':
+    if 'accept' not in request.headers or request.headers['accept'] != 'application/json':
         response = dict_to_json_response({"result": "Incorrect accept header"}, HTTPStatus.METHOD_NOT_ALLOWED)
     elif product_id is None:
         response = dict_to_json_response({"result": "Product Id Missing"}, HTTPStatus.BAD_REQUEST)
@@ -64,7 +65,7 @@ def lookup_order():
     response = None
     if request.data is None:
         response = dict_to_json_response({"request": "Product id not specified"}, HTTPStatus.BAD_REQUEST)
-    elif request.headers['accept'] != 'application/json':
+    elif 'accept' not in request.headers or request.headers['accept'] != 'application/json':
         response = dict_to_json_response({"result": "Incorrect accept header"}, HTTPStatus.METHOD_NOT_ALLOWED)
     elif request.content_type != 'application/json':
         response = dict_to_json_response({"result": "Incorrect content-type header"}, HTTPStatus.BAD_REQUEST)
