@@ -19,6 +19,20 @@ This Flask application is provides the ability to list a set of shoe products or
 
 ## Provided APIs
 
+You can output the routes of the application by running `flask routes` as shown below. Details
+of the APIs are described in later sections.
+
+```
+$ flask routes
+Endpoint           Methods  Rule
+-----------------  -------  ---------------------------
+get_order          GET      /products/item/<product_id>
+home               GET      /
+lookup_order       POST     /products
+search_for_orders  GET      /products
+static             GET      /static/<path:filename>
+```
+
 ### List Products
 
 Lists all of the products.
