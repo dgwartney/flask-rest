@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-import os
 import json
 from http import HTTPStatus
+
 from flask import Flask
+from flask import Response
 from flask import render_template
 from flask import request
-from flask import Response
 
 from rest.databases.shoes import get_products, get_product_by_id
 
@@ -65,8 +65,8 @@ def lookup_order():
     response = None
     if request.data is None:
         response = dict_to_json_response({"request": "Product id not specified"}, HTTPStatus.BAD_REQUEST)
-#    elif 'accept' not in request.headers or request.headers['accept'] != 'application/json':
-#        response = dict_to_json_response({"result": "Incorrect accept header"}, HTTPStatus.METHOD_NOT_ALLOWED)
+    #    elif 'accept' not in request.headers or request.headers['accept'] != 'application/json':
+    #        response = dict_to_json_response({"result": "Incorrect accept header"}, HTTPStatus.METHOD_NOT_ALLOWED)
     elif request.content_type != 'application/json':
         response = dict_to_json_response({"result": "Incorrect content-type header"}, HTTPStatus.BAD_REQUEST)
     else:
@@ -80,3 +80,23 @@ def lookup_order():
             response = dict_to_json_response({"request": "Product id not specified"},
                                              HTTPStatus.BAD_REQUEST)
     return response
+
+
+#
+# Looks up the status of an order
+#
+@app.route('/orders/<order_id>', methods=['GET'])
+def find_order(order_id):
+    """
+    Looks up the status of an order
+    """
+    app.logger.info(f"Searching for order with order id: {order_id}")
+    return {"order_status": "entregado"}
+
+
+#
+# Call by an action task
+#
+@app.route('/notifications/<notification_id>', methods=['GET'])
+def notifications(notification_id):
+    return {"message": "Hello World!"}
