@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import json
+from random import randint
 from http import HTTPStatus
 
 from flask import Flask
@@ -91,7 +92,7 @@ def find_order(order_id):
     Looks up the status of an order
     """
     app.logger.info(f"Searching for order with order id: {order_id}")
-    return {"order_status": "entregado"}
+    return {"order_status": "shipped"}
 
 
 #
@@ -100,3 +101,41 @@ def find_order(order_id):
 @app.route('/notifications/<notification_id>', methods=['GET'])
 def notifications(notification_id):
     return {"message": "Hello World!"}
+
+
+#
+# Lookup the balance of the a user
+#
+@app.route('/accounts/<email>', methods=['GET'])
+def get_account_information(email):
+    accounts = {
+        "john.smith@example.com": {
+            "first_name": "John",
+            "last_name": "Smith",
+            "account_id": 65432
+        },
+        "david.gwartney@kore.com": {
+            "first_name": "David",
+            "last_name": "Gwartney",
+            "account_id": 12345
+        }
+    }
+
+    account_info = accounts[email]
+    if account_info is None:
+        account_info = {}
+    return account_info
+
+
+#
+# Get Balance
+#
+@app.route('/balance/<account_id>', methods=['GET'])
+def get_balance(account_id):
+    balance = randint(5, 1000)
+    app.logger.debug(balance)
+    return {"balance": str(randint(5, 1000))}
+
+
+
+
