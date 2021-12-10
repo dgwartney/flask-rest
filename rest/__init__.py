@@ -74,8 +74,27 @@ def lookup_order():
         product_id = doc['product_id']
         if 'product_id' in doc:
             product = get_product_by_id(product_id)
-            response = dict_to_json_response({ "products": [product]}, HTTPStatus.OK)
+            response = dict_to_json_response({"products": [product]}, HTTPStatus.OK)
         else:
             response = dict_to_json_response({"request": "Product id not specified"},
                                              HTTPStatus.BAD_REQUEST)
     return response
+
+
+@app.route('/nlx/rest-proxy', methods=['POST'])
+def rest_proxy():
+    doc = request.get_json()
+    print(json.dumps(doc))
+    data = {
+        "resolvedVariables": [
+            {
+                "variableId": doc['variables'][0]['variableId'],
+                "value": "Hello World"
+            }
+        ],
+        "unresolvedVariables": [],
+        "context": {
+            "newUser": True
+        }
+    }
+    return dict_to_json_response(data, HTTPStatus.OK)
