@@ -6,6 +6,7 @@ from flask import Flask
 from flask import render_template
 from flask import request
 from flask import Response
+import requests
 
 from rest.databases.shoes import get_products, get_product_by_id
 
@@ -85,6 +86,16 @@ def lookup_order():
 def rest_proxy():
     doc = request.get_json()
     print(json.dumps(doc))
+    url = "https://httpbin.org/post"
+
+    payload = {}
+    headers = {
+        'accept': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
     data = {
         "resolvedVariables": [
             {
@@ -93,8 +104,15 @@ def rest_proxy():
             }
         ],
         "unresolvedVariables": [],
-        "context": {
-            "newUser": True
-        }
+        "context": doc['context']
     }
+
+    data['context']['body'] = response.text
+    data['context']['status'] = response.status_code
+    headers = dict(response.headers)
+    data['context']['headers'] = headers
+    print(response.cookies)
+    cookies = dict(response.cookies)
+    data['context']['cookies'] = cookies
+    print(data)
     return dict_to_json_response(data, HTTPStatus.OK)
