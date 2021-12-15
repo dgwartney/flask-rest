@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import logging
 import json
 from http import HTTPStatus
 from flask import Flask
@@ -8,10 +9,13 @@ from flask import request
 from flask import Response
 import requests
 
+
 from rest.databases.shoes import get_products, get_product_by_id
 
 # create the application object
 app = Flask(__name__)
+
+OPEN_WEATHER_API_KEY = os.getenv('OPEN_WEATHER_API_KEY', '')
 
 
 def dict_to_json_response(data, status):
@@ -85,34 +89,72 @@ def lookup_order():
 @app.route('/nlx/rest-proxy', methods=['POST'])
 def rest_proxy():
     doc = request.get_json()
-    print(json.dumps(doc))
+    app.logger.debug(json.dumps(doc))
     url = "https://httpbin.org/post"
 
     payload = {}
     headers = {
         'accept': 'application/json'
     }
-
     response = requests.request("POST", url, headers=headers, data=payload)
-
-    print(response.text)
+    app.logger.debug(response.text)
     data = {
         "resolvedVariables": [
             {
-                "variableId": doc['variables'][0]['variableId'],
-                "value": "Hello World"
+                "variableId": "RPRestCall",
+                "value": {
+                    "status": str(response.status_code),
+                    "body": str(response.text)
+                }
             }
         ],
         "unresolvedVariables": [],
-        "context": doc['context']
+        "context": {}
     }
-
     data['context']['body'] = response.text
-    data['context']['status'] = response.status_code
-    headers = dict(response.headers)
-    data['context']['headers'] = headers
-    print(response.cookies)
-    cookies = dict(response.cookies)
-    data['context']['cookies'] = cookies
-    print(data)
+    data['context']['status'] = str(response.status_code)
+    app.logger.debug(f'data: {json.dumps(data, sort_keys=True, indent=4)}')
+    return dict_to_json_response(data, HTTPStatus.OK)
+
+
+@app.route('/nlx/weather', methods=['POST'])
+def get_weather():
+    if OPEN_WEATHER_API_KEY is None:
+        return dict_to_json_response({}, HTTPStatus.NOT_IMPLEMENTED)
+    if len(request.data) == 0:
+        return dict_to_json_response({"error": "No payload"}, HTTPStatus.BAD_REQUEST)
+    doc = request.get_json()
+    if 'city' not in doc:
+        return dict_to_json_response({"error": "City not provided"}, HTTPStatus.BAD_REQUEST)
+    city = doc['city']
+    app.logger.debug(doc)
+    units = 'imperial'
+    url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPEN_WEATHER_API_KEY}&units={units}'
+
+    headers = {
+        'accept': 'application/json'
+    }
+    response = requests.request("GET", url, headers=headers)
+    doc = response.json()
+    app.logger.debug(doc)
+    coord = doc['coord']
+    weather = doc['weather']
+    main = doc['main']
+    data = {
+        "resolvedVariables": [
+            {
+                "variableId": "Weather",
+                "value": {
+                    "longitude": coord['lon'],
+                    "latitude": coord['lat'],
+                    "main": weather[0]['main'],
+                    "description": weather[0]['description'],
+                    "icon": weather[0]['icon'],
+                    "temperature": main['temp']
+                }
+            }
+        ],
+        "unresolvedVariables": [],
+        "context": {}
+    }
     return dict_to_json_response(data, HTTPStatus.OK)
