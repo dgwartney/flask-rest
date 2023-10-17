@@ -4,8 +4,8 @@ This Flask application is provides the ability to list a set of shoe products or
 
 ## Prerequisites
 
-- VM, PC, or latop to run
-- Python 3.6 environment with Flask package
+- VM, PC, or laptop to run
+- Python 3.7 or later environment with Flask package
 - ngrok [here](https://ngrok.com/)
 
 
@@ -13,7 +13,7 @@ This Flask application is provides the ability to list a set of shoe products or
 
 1. Clone [https://github.com/dgwartney/kore-rest](https://github.com/dgwartney/kore-rest) from github.
 2. Configure a Python environment (virtual environment using venv or conda your choice) with flask package
-3. Use ngrok to provide a routeable end-point
+3. Use ngrok to provide a routable end-point
 4. Source the `env.sh` file to set environment variables
 5. Run the command `flask run`
 
@@ -21,7 +21,7 @@ This Flask application is provides the ability to list a set of shoe products or
 
 ### List Products
 
-Lists all of the products.
+Lists all products.
 
 ### GET
 

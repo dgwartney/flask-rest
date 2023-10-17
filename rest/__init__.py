@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 import os
-import logging
 import json
+from datetime import datetime
 from http import HTTPStatus
 from flask import Flask
 from flask import render_template
 from flask import request
 from flask import Response
 import requests
-
 
 from rest.databases.shoes import get_products, get_product_by_id
 
@@ -32,7 +31,7 @@ def home():
 
 
 #
-# Returns all of the products in the catalog
+# Returns all products in the catalog
 #
 @app.route('/products', methods=['GET'])
 def search_for_orders():
@@ -86,6 +85,14 @@ def lookup_order():
     return response
 
 
+@app.route('/nlx/action-proxy', methods=['POST'])
+def action_proxy():
+    doc = request.get_json()
+    app.logger.debug(doc)
+
+    return dict_to_json_response({}, HTTPStatus.OK)
+
+
 @app.route('/nlx/rest-proxy', methods=['POST'])
 def rest_proxy():
     doc = request.get_json()
@@ -117,17 +124,21 @@ def rest_proxy():
     return dict_to_json_response(data, HTTPStatus.OK)
 
 
-@app.route('/nlx/weather', methods=['POST'])
+@app.route('/weather', methods=['GET'])
 def get_weather():
-    if OPEN_WEATHER_API_KEY is None:
-        return dict_to_json_response({}, HTTPStatus.NOT_IMPLEMENTED)
-    if len(request.data) == 0:
-        return dict_to_json_response({"error": "No payload"}, HTTPStatus.BAD_REQUEST)
-    doc = request.get_json()
-    if 'city' not in doc:
-        return dict_to_json_response({"error": "City not provided"}, HTTPStatus.BAD_REQUEST)
-    city = doc['city']
-    app.logger.debug(doc)
+    city = request.args.get('city')
+    # TODO: Implement the checks as an exception
+    # if OPEN_WEATHER_API_KEY is None:
+    #    return dict_to_json_response({}, HTTPStatus.NOT_IMPLEMENTED)
+    # if len(request.data) == 0:
+    #    return dict_to_json_response({"error": "No payload"}, HTTPStatus.OK)
+    # doc = request.get_json()
+    # app.logger.debug(doc)
+
+    # context = doc['context']
+    # if 'city' not in context:
+    #    return dict_to_json_response({"error": "City not provided"}, HTTPStatus.OK)
+    # city = context['city']
     units = 'imperial'
     url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPEN_WEATHER_API_KEY}&units={units}'
 
@@ -135,26 +146,35 @@ def get_weather():
         'accept': 'application/json'
     }
     response = requests.request("GET", url, headers=headers)
+    response.raise_for_status()
+
     doc = response.json()
+
     app.logger.debug(doc)
     coord = doc['coord']
     weather = doc['weather']
     main = doc['main']
+    wind = doc['wind']
+    sys = doc['sys']
+    sunrise = datetime.fromtimestamp(int(sys['sunrise']))
+    sunset = datetime.fromtimestamp(int(sys['sunset']))
     data = {
-        "resolvedVariables": [
-            {
-                "variableId": "Weather",
-                "value": {
-                    "longitude": coord['lon'],
-                    "latitude": coord['lat'],
-                    "main": weather[0]['main'],
-                    "description": weather[0]['description'],
-                    "icon": weather[0]['icon'],
-                    "temperature": main['temp']
-                }
-            }
-        ],
-        "unresolvedVariables": [],
-        "context": {}
+        "longitude": str(coord['lon']),
+        "latitude": str(coord['lat']),
+        "main": str(weather[0]['main']),
+        "description": str(weather[0]['description']),
+        "icon": str(weather[0]['icon']),
+        "temperature": str(main['temp']),
+        "feels_like": str(main['feels_like']),
+        "temperature_min": str(main['temp_min']),
+        "temperature_max": str(main['temp_max']),
+        "pressure": str(main['pressure']),
+        "humidity": str(main['humidity']),
+        "wind_speed": str(wind['speed']),
+        "wind_deg": str(wind['deg']),
+        "country": str(sys['country']),
+        "sunrise": str(sunrise.strftime('%Y-%m-%d %H:%M:%S')),
+        "sunset": str(sunset.strftime('%Y-%m-%d %H:%M:%S'))
     }
     return dict_to_json_response(data, HTTPStatus.OK)
+

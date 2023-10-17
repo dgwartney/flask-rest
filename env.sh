@@ -1,7 +1,15 @@
 export FLASK_APP=rest
-export FLASK_ENV=development
+export FLASK_DEBUG=True
 export FLASK_RUN_PORT=8000
-export OPEN_WEATHER_API_KEY=9159d802688e73bd02b92a25ba9e3a3a
+export CONDA_ENV=flask-rest
+export OPEN_WEATHER_API_KEY=
 
-# TODO: check to see if enivronment is available
-conda activate flask-rest
+echo "Sourcing environment..."
+conda env list | grep $CONDA_ENV
+if  conda env list | grep $CONDA_ENV > /dev/null
+then
+  conda activate $CONDA_ENV
+else
+  echo "Python environment not configured"
+fi
+
